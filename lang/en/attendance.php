@@ -351,8 +351,8 @@ $string['modulename_help'] = '###### Key features
 - Generate attendance reports for grading or compliance purposes
 - Customize statuses to fit specific course requirements
 - Share attendance data transparently with students';
-$string['modulenameplural'] = 'Attendances';
 $string['modulename_summary'] = 'Record and manage student attendance across sessions, while providing students access to their own attendance reports.';
+$string['modulenameplural'] = 'Attendances';
 $string['months'] = 'Months';
 $string['moreattendance'] = 'Attendance has been successfully taken for this page';
 $string['moveleft'] = 'Move left';

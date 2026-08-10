@@ -44,8 +44,7 @@ echo $OUTPUT->heading(get_string('defaultstatus', 'mod_attendance'));
 $tabmenu = attendance_print_settings_tabs('defaultstatus');
 echo $tabmenu;
 
-// phpcs:disable moodle.Commenting.TodoComment
-// TODO: Would be good to combine this code block with the one in preferences to avoid duplication.
+// Pending: combine this code block with the one in preferences.php to avoid duplication.
 $errors = [];
 switch ($action) {
     case mod_attendance_preferences_page_params::ACTION_ADD:
