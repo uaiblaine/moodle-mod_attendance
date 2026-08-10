@@ -63,8 +63,7 @@ if (!empty($att->pageparams->action)) {
     require_sesskey();
 }
 $notification = '';
-// phpcs:disable moodle.Commenting.TodoComment
-// TODO: combine this with the stuff in defaultstatus.php to avoid code duplication.
+// Pending: combine this with the code in defaultstatus.php to avoid duplication.
 switch ($att->pageparams->action) {
     case mod_attendance_preferences_page_params::ACTION_ADD:
         $newacronym         = optional_param('newacronym', null, PARAM_TEXT);

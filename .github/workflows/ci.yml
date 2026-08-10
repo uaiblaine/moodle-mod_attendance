@@ -1,13 +1,17 @@
-# .github/workflows/ci.yml
 name: ci
 
-on: [push, pull_request]
+# workflow_dispatch is the manual escape hatch: it lets a run be launched for
+# a push whose commits would otherwise skip CI, without pushing another commit.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
 
 jobs:
+  # Single reusable-workflow call: the Moodle core branch is auto-detected from
+  # this plugin branch's name (MOODLE_502_STABLE), so no moodle-core-branch
+  # input is given. Every MOODLE_XX_STABLE branch carries this same single-call
+  # form and resolves to its own core branch — keep each branch's own version of
+  # this file when resolving cherry-picks.
   ci:
-    uses: catalyst/catalyst-moodle-workflows/.github/workflows/ci.yml@main
-    # Required if you plan to publish (uncomment the below)
-    secrets:
-      moodle_org_token: ${{ secrets.MOODLE_ORG_TOKEN }}
-    with:
-      disable_mustache: true
+    uses: moodle-an-hochschulen/moodle-workflows/.github/workflows/moodle-plugin-ci.yml@main

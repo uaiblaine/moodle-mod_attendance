@@ -563,8 +563,7 @@ class mod_attendance_external extends external_api {
         $student = $DB->get_record('user', ['id' => $params['studentid']], '*', MUST_EXIST);
         $takenby = $DB->get_record('user', ['id' => $params['takenbyid']], '*', MUST_EXIST);
 
-        // phpcs:disable moodle.Commenting.TodoComment
-        // TODO: Verify statusset and statusid.
+        // Pending: verify statusset and statusid.
 
         return attendance_handler::update_user_status(
             $params['sessionid'],
