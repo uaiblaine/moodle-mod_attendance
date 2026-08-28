@@ -565,7 +565,12 @@ class mod_attendance_external extends external_api {
 
         $attrecord = $DB->get_record('attendance', ['id' => $session->attendanceid], '*', MUST_EXIST);
         $course = get_course($cm->course);
-        $att = new mod_attendance_structure($attrecord, $cm, $course, $context);
+        // The page params must carry the session id: get_statuses() falls back to status set 0
+        // without them, so every status of any other set is rejected for a self-marking student.
+        // attendance.php sets the same field before building the structure, for the same reason.
+        $pageparams = new mod_attendance_sessions_page_params();
+        $pageparams->sessionid = $session->id;
+        $att = new mod_attendance_structure($attrecord, $cm, $course, $context, $pageparams);
 
         if ((int)$params['statusset'] !== (int)$session->statusset) {
             throw new invalid_parameter_exception(get_string('invalidstatus', 'mod_attendance'));
