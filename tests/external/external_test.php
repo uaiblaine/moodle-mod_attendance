@@ -364,6 +364,78 @@ final class external_test extends externallib_advanced_testcase {
     }
 
     /**
+     * Test a self-marking student can use a status belonging to the session's own status set.
+     *
+     * @covers \mod_attendance\external::update_user_status
+     * @return void
+     * @throws \invalid_parameter_exception
+     */
+    public function test_update_user_status_uses_the_sessions_status_set(): void {
+        global $DB;
+
+        $this->resetAfterTest(true);
+        set_config('studentscanmark', 1, 'attendance');
+
+        $session = $DB->get_record(
+            'attendance_sessions',
+            ['attendanceid' => $this->attendance->id],
+            '*',
+            MUST_EXIST
+        );
+        $DB->set_field('attendance_sessions', 'studentscanmark', 1, ['id' => $session->id]);
+        // The fixture stamps sessdate with time(), and the self-marking window opens only once
+        // the clock is strictly past it. Anchor it in the past so the window is unambiguously open.
+        $DB->set_field('attendance_sessions', 'sessdate', time() - MINSECS, ['id' => $session->id]);
+        // Every status the fixture ships lives in set 0, so move the session onto a different
+        // set and give that set a status of its own. A student marking themselves must be
+        // offered that status, not the ones belonging to set 0.
+        $DB->set_field('attendance_sessions', 'statusset', 1, ['id' => $session->id]);
+
+        $status = new stdClass();
+        $status->attendanceid = $this->attendance->id;
+        $status->acronym = 'P1';
+        $status->description = 'Present in set 1';
+        $status->grade = 1;
+        $status->setnumber = 1;
+        // Declared so the event snapshot attendance_add_status() takes matches the table's
+        // column list; left null so the status stays available for the whole session.
+        $status->studentavailability = null;
+        $this->assertTrue(attendance_add_status($status));
+
+        // Control: the new status belongs to set 1 and to no other, so a pass below cannot
+        // come from the two sets happening to share an id.
+        $this->assertArrayHasKey(
+            (int)$status->id,
+            attendance_get_statuses($this->attendance->id, true, 1)
+        );
+        $this->assertArrayNotHasKey(
+            (int)$status->id,
+            attendance_get_statuses($this->attendance->id, true, 0)
+        );
+
+        $student = $this->students[0];
+        $this->setUser($student);
+
+        $result = mod_attendance_external::update_user_status(
+            $session->id,
+            $student->id,
+            $student->id,
+            $status->id,
+            1
+        );
+        external_api::clean_returnvalue(mod_attendance_external::update_user_status_returns(), $result);
+
+        $log = $DB->get_record(
+            'attendance_log',
+            ['sessionid' => $session->id, 'studentid' => $student->id],
+            '*',
+            MUST_EXIST
+        );
+        $this->assertEquals((int)$status->id, (int)$log->statusid);
+        $this->assertEquals(1, (int)$log->statusset);
+    }
+
+    /**
      * Test adding new attendance record via ws.
      *
      * @covers \mod_attendance\external::add_attendance
