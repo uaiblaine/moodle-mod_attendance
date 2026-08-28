@@ -366,7 +366,7 @@ final class external_test extends externallib_advanced_testcase {
     /**
      * Test a self-marking student can use a status belonging to the session's own status set.
      *
-     * @covers \mod_attendance\external::update_user_status
+     * @covers \mod_attendance_external::update_user_status
      * @return void
      * @throws \invalid_parameter_exception
      */
