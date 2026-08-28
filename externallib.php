@@ -557,6 +557,20 @@ class mod_attendance_external extends external_api {
             if (!$canmark) {
                 throw new invalid_parameter_exception($reason);
             }
+
+            // A student may not overwrite a status they have already recorded unless the
+            // session allows updates. Every web path enforces this — attendance.php,
+            // structure.php, studentattendance.php and renderer.php all consult
+            // attendance_check_allow_update() — but no web service path ever did.
+            $alreadymarked = $DB->record_exists('attendance_log', [
+                'sessionid' => $session->id,
+                'studentid' => $USER->id,
+            ]);
+            if ($alreadymarked && !attendance_check_allow_update($session->id)) {
+                throw new invalid_parameter_exception(
+                    get_string('attendance_already_submitted', 'mod_attendance')
+                );
+            }
         }
 
         // Check user id is valid.

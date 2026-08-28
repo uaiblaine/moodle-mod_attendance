@@ -436,6 +436,76 @@ final class external_test extends externallib_advanced_testcase {
     }
 
     /**
+     * Test the web service refuses a re-mark when the session disallows status updates.
+     *
+     * @covers \mod_attendance_external::update_user_status
+     * @return void
+     * @throws \invalid_parameter_exception
+     */
+    public function test_update_user_status_honours_allowupdatestatus(): void {
+        global $DB;
+
+        $this->resetAfterTest(true);
+        set_config('studentscanmark', 1, 'attendance');
+
+        $session = $DB->get_record(
+            'attendance_sessions',
+            ['attendanceid' => $this->attendance->id],
+            '*',
+            MUST_EXIST
+        );
+        $DB->set_field('attendance_sessions', 'studentscanmark', 1, ['id' => $session->id]);
+        $DB->set_field('attendance_sessions', 'sessdate', time() - MINSECS, ['id' => $session->id]);
+
+        $statuses = attendance_get_statuses($this->attendance->id, true, 0);
+        $this->assertNotEmpty($statuses);
+        $first = reset($statuses);
+        $second = next($statuses);
+        $this->assertNotFalse($second, 'The fixture must offer two statuses to switch between.');
+
+        $student = $this->students[0];
+        $this->setUser($student);
+
+        // First mark: nothing recorded yet, so the guard cannot apply.
+        mod_attendance_external::update_user_status(
+            $session->id,
+            $student->id,
+            $student->id,
+            $first->id,
+            0
+        );
+
+        // Control: with updates allowed the second mark goes through, which is what proves
+        // the rejection below comes from the guard and not from re-marking being impossible.
+        $DB->set_field('attendance_sessions', 'allowupdatestatus', 1, ['id' => $session->id]);
+        mod_attendance_external::update_user_status(
+            $session->id,
+            $student->id,
+            $student->id,
+            $second->id,
+            0
+        );
+        $log = $DB->get_record(
+            'attendance_log',
+            ['sessionid' => $session->id, 'studentid' => $student->id],
+            '*',
+            MUST_EXIST
+        );
+        $this->assertEquals((int)$second->id, (int)$log->statusid);
+
+        // With updates disallowed the same call must be refused.
+        $DB->set_field('attendance_sessions', 'allowupdatestatus', 0, ['id' => $session->id]);
+        $this->expectException('invalid_parameter_exception');
+        mod_attendance_external::update_user_status(
+            $session->id,
+            $student->id,
+            $student->id,
+            $first->id,
+            0
+        );
+    }
+
+    /**
      * Test adding new attendance record via ws.
      *
      * @covers \mod_attendance\external::add_attendance
