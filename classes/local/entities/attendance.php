@@ -86,7 +86,7 @@ class attendance extends base {
             $this->add_filter($filter);
         }
 
-        // TODO: differentiate between filters and conditions (specifically the 'date' type: MDL-72662).
+        // Pending: differentiate between filters and conditions (specifically the 'date' type: MDL-72662).
         $conditions = $this->get_all_filters();
         foreach ($conditions as $condition) {
             $this->add_condition($condition);

@@ -106,8 +106,7 @@ class restore_attendance_activity_task extends restore_activity_task {
     public static function define_restore_log_rules() {
         $rules = [];
 
-        // phpcs:disable moodle.Commenting.TodoComment
-        // TODO: log restore.
+        // Pending: log the restore.
         return $rules;
     }
 

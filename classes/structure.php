@@ -601,7 +601,7 @@ class mod_attendance_structure {
         global $DB;
 
         if (!$sess = $DB->get_record('attendance_sessions', ['id' => $sessionid, 'attendanceid' => $this->id])) {
-            throw new moodle_exception('No such session in this course');
+            throw new moodle_exception('nosessionexists', 'mod_attendance');
         }
 
         $sesstarttime = $formdata->sestime['starthour'] * HOURSECS + $formdata->sestime['startminute'] * MINSECS;
@@ -1190,7 +1190,7 @@ class mod_attendance_structure {
 
         if (count($sessions) != count(array_unique($sessionids))) {
             // At least one requested session id does not belong to this attendance instance.
-            throw new moodle_exception('No such session in this course');
+            throw new moodle_exception('nosessionexists', 'mod_attendance');
         }
 
         foreach ($sessions as $sess) {

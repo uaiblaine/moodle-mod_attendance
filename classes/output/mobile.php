@@ -163,8 +163,7 @@ class mobile {
                     $html = ['time' => strip_tags(construct_session_full_date_time($sess->sessdate, $sess->duration)),
                         'groupname' => '', ];
                     if (!empty($sess->groupid)) {
-                        // phpcs:disable moodle.Commenting.TodoComment
-                        // TODO In-efficient way to get group name - we should get all groups in one query.
+                        // Pending: inefficient way to get the group name - we should get all groups in one query.
                         $html['groupname'] = $DB->get_field('groups', 'name', ['id' => $sess->groupid]);
                     }
 

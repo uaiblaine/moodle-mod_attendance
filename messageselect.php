@@ -154,12 +154,12 @@ if (!empty($messagebody) && !$edit && !$deluser && ($preview || $send)) {
                 // Check $user is enrolled in this course.
                 if (!is_enrolled($coursecontext, $user)) {
                     $user->fullname = fullname($user);
-                    $fails[] = get_string('messagedselecteduserfailed', 'moodle', $user);
+                    $fails[] = get_string('messagedselecteduserfailed', 'mod_attendance', $user);
                     continue;
                 }
                 if (!message_post_message($USER, $user, $messagebody, $format)) {
                     $user->fullname = fullname($user);
-                    $fails[] = get_string('messagedselecteduserfailed', 'moodle', $user);
+                    $fails[] = get_string('messagedselecteduserfailed', 'mod_attendance', $user);
                 };
             }
             if (empty($fails)) {
@@ -167,7 +167,7 @@ if (!empty($messagebody) && !$edit && !$deluser && ($preview || $send)) {
                 unset($SESSION->emailto[$id]);
                 unset($SESSION->emailselect[$id]);
             } else {
-                echo $OUTPUT->heading(get_string('messagedselectedcountusersfailed', 'moodle', count($fails)));
+                echo $OUTPUT->heading(get_string('messagedselectedcountusersfailed', 'mod_attendance', count($fails)));
                 echo '<ul>';
                 foreach ($fails as $f) {
                     echo '<li>', $f, '</li>';
