@@ -22,7 +22,6 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-
 define('ATT_VIEW_DAYS', 1);
 define('ATT_VIEW_WEEKS', 2);
 define('ATT_VIEW_MONTHS', 3);
@@ -652,10 +651,20 @@ function attendance_is_status_availablebeforesession($sessionid, $statusid = nul
  * @return array (boolean, string reason for failure)
  */
 function attendance_can_student_mark($sess, $log = true) {
-    global $DB, $USER, $OUTPUT;
+    global $DB, $USER;
     $canmark = false;
     $reason = 'closed';
     $attconfig = get_config('attendance');
+
+    if (empty($attconfig->studentscanmark) || empty($sess->studentscanmark)) {
+        return [$canmark, $reason];
+    }
+
+    $cm = get_coursemodule_from_instance('attendance', $sess->attendanceid);
+    $context = \context_module::instance($cm->id);
+    if (!has_capability('mod/attendance:canbelisted', $context)) {
+        return [$canmark, $reason];
+    }
 
     if (!empty($attconfig->studentscanmark) && !empty($sess->studentscanmark)) {
         if (
@@ -1274,10 +1283,15 @@ function attendance_session_get_highest_status(mod_attendance_structure $att, $a
 /**
  * Get available automark options.
  *
+ * @param stdClass|null $course the course the options are for, the current course ($COURSE) if not given
  * @return array
  */
-function attendance_get_automarkoptions() {
+function attendance_get_automarkoptions(?stdClass $course = null) {
     global $COURSE;
+
+    if ($course === null) {
+        $course = $COURSE;
+    }
 
     $options = [];
 
@@ -1286,7 +1300,7 @@ function attendance_get_automarkoptions() {
         $options[ATTENDANCE_AUTOMARK_ALL] = get_string('automarkall', 'attendance');
     }
     $options[ATTENDANCE_AUTOMARK_CLOSE] = get_string('automarkclose', 'attendance');
-    if ($COURSE->id == SITEID || $COURSE->enablecompletion == COMPLETION_ENABLED) {
+    if ($course->id == SITEID || $course->enablecompletion == COMPLETION_ENABLED) {
         $options[ATTENDANCE_AUTOMARK_ACTIVITYCOMPLETION] = get_string('onactivitycompletion', 'attendance');
     }
 
